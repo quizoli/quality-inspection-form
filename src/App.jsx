@@ -392,6 +392,7 @@ export default function App() {
           checklistData,
           defectsData,
           creatorUid: user.uid,
+          creatorEmail: user.email,
           submittedAt: serverTimestamp()
         });
         
@@ -470,6 +471,9 @@ export default function App() {
                 <div className="text-xs text-secondary mt-2 flex justify-between">
                   <span>{item.projectInfo?.date || ''}</span>
                   <span>{item.projectInfo?.inspectorName || ''}</span>
+                </div>
+                <div className="text-[10px] text-secondary/70 mt-1 pt-1 border-t border-[var(--border)] italic">
+                  Created by: {item.creatorEmail || 'Unknown'}
                 </div>
               </div>
             ))
