@@ -256,6 +256,7 @@ export default function App() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [viewingMode, setViewingMode] = useState('new'); // 'new' or 'history'
   const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
+  const [currentRecordOwner, setCurrentRecordOwner] = useState(null);
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -323,6 +324,7 @@ export default function App() {
   const loadHistoryItem = (item) => {
     setViewingMode('history');
     setSelectedHistoryItem(item.id);
+    setCurrentRecordOwner(item.creatorUid || null);
     setProjectInfo(item.projectInfo || {});
     setChecklistData(item.checklistData || {});
     setDefectsData(item.defectsData || Array.from({ length: 10 }, () => ({ description: '', severity: '' })));
@@ -332,6 +334,7 @@ export default function App() {
   const startNewInspection = () => {
     setViewingMode('new');
     setSelectedHistoryItem(null);
+    setCurrentRecordOwner(null);
     // Reload draft from local storage
     const saved = localStorage.getItem('qualityInspectionDataV2');
     if (saved) {
@@ -388,12 +391,14 @@ export default function App() {
           projectInfo,
           checklistData,
           defectsData,
+          creatorUid: user.uid,
           submittedAt: serverTimestamp()
         });
         
         // Switch to history mode to track this new record
         setViewingMode('history');
         setSelectedHistoryItem(docRef.id);
+        setCurrentRecordOwner(user.uid);
         alert("Success! Inspection report has been saved to the Firebase Cloud Database.");
       }
     } catch (error) {
@@ -414,6 +419,8 @@ export default function App() {
   if (!user) {
     return <Login />;
   }
+
+  const isFormReadOnly = viewingMode === 'history' && currentRecordOwner !== user.uid;
 
   return (
     <div className="min-h-screen">
@@ -514,6 +521,7 @@ export default function App() {
                 onChange={e => setProjectInfo({...projectInfo, schoolName: e.target.value})} 
                 placeholder="e.g. San Jose National High School"
                 className="print-input"
+                disabled={isFormReadOnly}
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -525,6 +533,7 @@ export default function App() {
                   onChange={e => setProjectInfo({...projectInfo, beisId: e.target.value})} 
                   placeholder="e.g. 104523"
                   className="print-input"
+                  disabled={isFormReadOnly}
                 />
               </div>
               <div className="w-full">
@@ -535,6 +544,7 @@ export default function App() {
                   onChange={e => setProjectInfo({...projectInfo, siteCode: e.target.value})} 
                   placeholder="e.g. REG3-PMP-001"
                   className="print-input"
+                  disabled={isFormReadOnly}
                 />
               </div>
             </div>
@@ -547,6 +557,7 @@ export default function App() {
                   onChange={e => setProjectInfo({...projectInfo, inspectorName: e.target.value})} 
                   placeholder="John Doe"
                   className="print-input"
+                  disabled={isFormReadOnly}
                 />
               </div>
               <div className="w-full">
@@ -556,6 +567,7 @@ export default function App() {
                   value={projectInfo.date} 
                   onChange={e => setProjectInfo({...projectInfo, date: e.target.value})} 
                   className="print-input"
+                  disabled={isFormReadOnly}
                 />
               </div>
             </div>
@@ -574,7 +586,7 @@ export default function App() {
                   item={item} 
                   data={checklistData[item.id] || {}} 
                   onChange={(data) => handleItemChange(item.id, data)}
-                  isReadOnly={false}
+                  isReadOnly={isFormReadOnly}
                 />
               ))}
             </div>
@@ -610,6 +622,7 @@ export default function App() {
                         }}
                         placeholder="Describe defect..."
                         className="w-full bg-transparent border-0 focus:ring-0 p-0"
+                        disabled={isFormReadOnly}
                       />
                     </td>
                     <td className="p-3">
@@ -620,7 +633,8 @@ export default function App() {
                           newData[index].severity = e.target.value;
                           setDefectsData(newData);
                         }}
-                        className="w-full bg-transparent border border-[var(--border)] rounded p-1 text-sm appearance-none cursor-pointer"
+                        className="w-full bg-transparent border border-[var(--border)] rounded p-1 text-sm appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isFormReadOnly}
                       >
                         <option value="">Select...</option>
                         <option value="Minor">Minor</option>
@@ -668,10 +682,12 @@ export default function App() {
             <button onClick={startNewInspection} className="btn btn-outline">
               <Plus size={16} /> Start New Draft
             </button>
-            <button onClick={handleSubmitToCloud} disabled={isSubmitting} className="btn">
-              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CloudUpload size={16} />} 
-              {isSubmitting ? 'Saving...' : 'Update Cloud Record'}
-            </button>
+            {!isFormReadOnly && (
+              <button onClick={handleSubmitToCloud} disabled={isSubmitting} className="btn">
+                {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CloudUpload size={16} />} 
+                {isSubmitting ? 'Saving...' : 'Update Cloud Record'}
+              </button>
+            )}
           </div>
         )}
       </main>
