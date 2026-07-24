@@ -493,15 +493,15 @@ export default function App() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSignOut} className="btn btn-outline text-sm border-danger text-danger hover:bg-danger/10" title="Sign Out">
-              <LogOut size={16} />
+            <button onClick={handleSignOut} className="btn btn-outline text-sm border-danger text-danger hover:bg-danger/10 p-2 sm:px-4 sm:py-2" title="Sign Out">
+              <LogOut size={16} /> <span className="hidden sm:inline">Sign Out</span>
             </button>
-            <button onClick={handlePrint} className="btn btn-outline text-sm">
-              <Printer size={16} /> Print / PDF
+            <button onClick={handlePrint} className="btn btn-outline text-sm p-2 sm:px-4 sm:py-2" title="Print / PDF">
+              <Printer size={16} /> <span className="hidden sm:inline">Print / PDF</span>
             </button>
-            <button onClick={handleSubmitToCloud} disabled={isSubmitting} className="btn text-sm flex items-center gap-1">
+            <button onClick={handleSubmitToCloud} disabled={isSubmitting} className="btn text-sm flex items-center gap-1 p-2 sm:px-4 sm:py-2" title="Save to Cloud">
               {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CloudUpload size={16} />} 
-              {isSubmitting ? 'Saving...' : (viewingMode === 'history' ? 'Update Cloud Record' : 'Submit to Cloud')}
+              <span className="hidden sm:inline">{isSubmitting ? 'Saving...' : (viewingMode === 'history' ? 'Update Cloud Record' : 'Submit to Cloud')}</span>
             </button>
           </div>
         </div>
@@ -603,7 +603,8 @@ export default function App() {
             Summary of Defects
           </h2>
           <div className="bg-surface rounded-lg shadow-sm border border-[var(--border)] overflow-hidden">
-            <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left border-collapse min-w-500">
               <thead>
                 <tr className="bg-gray-50 border-b border-[var(--border)] print-bg-none">
                   <th className="p-3 font-semibold text-secondary w-12 text-center print-text-black border-r border-[var(--border)]">#</th>
@@ -650,6 +651,7 @@ export default function App() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
           <div className="mt-6 print-mt-4">
