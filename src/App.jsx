@@ -248,6 +248,7 @@ export default function App() {
   });
   const [checklistData, setChecklistData] = useState({});
   const [defectsData, setDefectsData] = useState(() => Array.from({ length: 10 }, () => ({ description: '', severity: '' })));
+  const [correctiveActions, setCorrectiveActions] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sidebar and Viewer State
@@ -287,6 +288,7 @@ export default function App() {
       if (parsed.projectInfo) setProjectInfo(parsed.projectInfo);
       if (parsed.checklistData) setChecklistData(parsed.checklistData);
       if (parsed.defectsData) setDefectsData(parsed.defectsData);
+      if (parsed.correctiveActions) setCorrectiveActions(parsed.correctiveActions);
     }
   }, []);
 
@@ -294,11 +296,11 @@ export default function App() {
   useEffect(() => {
     if (viewingMode === 'history') return;
     try {
-      localStorage.setItem('qualityInspectionDataV2', JSON.stringify({ projectInfo, checklistData, defectsData }));
+      localStorage.setItem('qualityInspectionDataV2', JSON.stringify({ projectInfo, checklistData, defectsData, correctiveActions }));
     } catch (e) {
       console.error("Local storage error:", e);
     }
-  }, [projectInfo, checklistData, defectsData, viewingMode]);
+  }, [projectInfo, checklistData, defectsData, correctiveActions, viewingMode]);
 
   const fetchHistory = async () => {
     setIsLoadingHistory(true);
@@ -328,6 +330,7 @@ export default function App() {
     setProjectInfo(item.projectInfo || {});
     setChecklistData(item.checklistData || {});
     setDefectsData(item.defectsData || Array.from({ length: 10 }, () => ({ description: '', severity: '' })));
+    setCorrectiveActions(item.correctiveActions || '');
     setIsSidebarOpen(false);
   };
 
@@ -342,10 +345,12 @@ export default function App() {
       setProjectInfo(parsed.projectInfo || { schoolName: '', beisId: '', siteCode: '', inspectorName: '', date: new Date().toISOString().split('T')[0] });
       setChecklistData(parsed.checklistData || {});
       setDefectsData(parsed.defectsData || Array.from({ length: 10 }, () => ({ description: '', severity: '' })));
+      setCorrectiveActions(parsed.correctiveActions || '');
     } else {
       setProjectInfo({ schoolName: '', beisId: '', siteCode: '', inspectorName: '', date: new Date().toISOString().split('T')[0] });
       setChecklistData({});
       setDefectsData(Array.from({ length: 10 }, () => ({ description: '', severity: '' })));
+      setCorrectiveActions('');
     }
     setIsSidebarOpen(false);
   };
@@ -363,6 +368,7 @@ export default function App() {
       setProjectInfo({ schoolName: '', beisId: '', siteCode: '', inspectorName: '', date: new Date().toISOString().split('T')[0] });
       setChecklistData({});
       setDefectsData(Array.from({ length: 10 }, () => ({ description: '', severity: '' })));
+      setCorrectiveActions('');
       localStorage.removeItem('qualityInspectionDataV2');
     }
   };
@@ -382,6 +388,7 @@ export default function App() {
           projectInfo,
           checklistData,
           defectsData,
+          correctiveActions,
           updatedAt: serverTimestamp()
         });
         alert("Success! Inspection report has been updated in the cloud.");
@@ -391,6 +398,7 @@ export default function App() {
           projectInfo,
           checklistData,
           defectsData,
+          correctiveActions,
           creatorUid: user.uid,
           creatorEmail: user.email,
           submittedAt: serverTimestamp()
@@ -670,6 +678,18 @@ export default function App() {
                 <div className="text-2xl font-bold">{defectsData.filter(d => d.severity === 'Critical').length}</div>
               </div>
             </div>
+          </div>
+
+          <div className="mt-6 print-mt-4">
+            <h3 className="font-bold mb-2">Corrective Actions</h3>
+            <textarea
+              value={correctiveActions}
+              onChange={(e) => setCorrectiveActions(e.target.value)}
+              placeholder="Describe corrective actions to be taken..."
+              rows={4}
+              className="w-full print-textarea"
+              disabled={isFormReadOnly}
+            />
           </div>
         </section>
 
